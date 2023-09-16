@@ -1,0 +1,78 @@
+CREATE TABLE course_dis (
+    course_id SERIAL PRIMARY KEY,
+    course_name TEXT NOT NULL,
+    credit_structure TEXT,
+    prerequisites TEXT,
+    -- course_type TEXT,
+    total_credits INTEGER
+);
+
+CREATE TABLE course_off (
+    off_id SERIAL PRIMARY KEY,
+    course_id INTEGER NOT NULL REFERENCES course_dis(course_id),
+    instructor TEXT,
+    semester TEXT,
+    cgpa_const NUMERIC
+);
+CREATE TABLE users (
+    user_id SERIAL PRIMARY KEY,
+    username TEXT NOT NULL,
+    password TEXT NOT NULL,
+    role TEXT NOT NULL
+);
+
+CREATE TABLE students (
+    student_id SERIAL PRIMARY KEY,
+    user_id INTEGER NOT NULL REFERENCES users(user_id),
+    entry_year INTEGER,
+    branch TEXT,
+    phonenumber INTEGER,
+    address TEXT
+);
+
+CREATE TABLE student_course_reg (
+    reg_id SERIAL PRIMARY KEY,
+    student_id INTEGER NOT NULL REFERENCES users(user_id),
+    off_id INTEGER NOT NULL REFERENCES course_off(off_id),
+    credits INTEGER NOT NULL
+);
+
+CREATE TABLE grades (
+    grade_id SERIAL PRIMARY KEY,
+    reg_id INTEGER NOT NULL REFERENCES student_course_reg(reg_id),
+    grade TEXT
+);
+
+CREATE TABLE course_tags (
+    tag_id SERIAL PRIMARY KEY,
+    course_id INTEGER NOT NULL REFERENCES course_dis(course_id),
+    course_type TEXT,
+    entry_year INTEGER,
+    branch TEXT
+);
+
+
+
+CREATE TABLE curriculum (
+    id SERIAL PRIMARY KEY,
+    semester TEXT NOT NULL,
+    status INTEGER NOT NULL,
+    CHECK (status IN (0, 1, 2, 3, 4))
+);
+ALTER TABLE course_off ADD CONSTRAINT unique_course_semester UNIQUE(course_id, semester);
+ALTER TABLE course_dis ADD CONSTRAINT course_name_unique UNIQUE (course_name);
+ALTER TABLE course_dis ALTER COLUMN credit_structure SET NOT NULL;
+-- ALTER TABLE course_dis DROP CONSTRAINT unique_total_credits;
+ALTER TABLE course_dis ALTER COLUMN total_credits SET NOT NULL;
+ALTER TABLE course_off
+ALTER COLUMN semester TYPE INTEGER USING semester::integer;
+ALTER TABLE curriculum
+ALTER COLUMN semester TYPE INTEGER USING semester::integer;
+ALTER TABLE course_dis ALTER COLUMN course_id TYPE INTEGER;
+ALTER TABLE course_off ALTER COLUMN off_id TYPE INTEGER;
+ALTER TABLE student_course_reg ALTER COLUMN reg_id TYPE INTEGER;
+ALTER TABLE grades ALTER COLUMN grade_id TYPE INTEGER;
+ALTER TABLE course_tags ALTER COLUMN tag_id TYPE INTEGER;
+ALTER TABLE users ALTER COLUMN user_id TYPE INTEGER;
+ALTER TABLE students ALTER COLUMN student_id TYPE INTEGER;
+ALTER TABLE curriculum ALTER COLUMN id TYPE INTEGER;

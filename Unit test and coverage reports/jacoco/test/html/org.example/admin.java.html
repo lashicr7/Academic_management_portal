@@ -1,0 +1,208 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>admin.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">seproj</a> &gt; <a href="index.source.html" class="el_package">org.example</a> &gt; <span class="el_source">admin.java</span></div><h1>admin.java</h1><pre class="source lang-java linenums">package org.example;
+
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.Scanner;
+
+<span class="fc" id="L10">public class admin {</span>
+    //    private final String username = &quot;Staff Dean's office&quot;;
+//    private final Connection conn;
+//
+//    public admin(Connection conn) {
+//        this.connection = conn;
+//    }
+    public static int addNewCourse(Connection conn) throws SQLException {
+<span class="fc" id="L18">        Scanner scanner = new Scanner(System.in);</span>
+<span class="fc" id="L19">        PreparedStatement ps = null;</span>
+<span class="fc" id="L20">        ResultSet rs = null;</span>
+
+        try {
+            // Get the course details from the user
+<span class="fc" id="L24">            System.out.print(&quot;Enter course name: &quot;);</span>
+<span class="fc" id="L25">            String courseName = scanner.nextLine();</span>
+
+<span class="fc" id="L27">            System.out.print(&quot;Enter credit structure: &quot;);</span>
+<span class="fc" id="L28">            String creditStructure = scanner.nextLine();</span>
+
+<span class="fc" id="L30">            System.out.print(&quot;Enter prerequisites: &quot;);</span>
+<span class="fc" id="L31">            String prerequisites = scanner.nextLine();</span>
+
+<span class="fc" id="L33">            System.out.print(&quot;Enter total credits: &quot;);</span>
+<span class="fc" id="L34">            int totalCredits = scanner.nextInt();</span>
+//	        scanner.nextLine();
+<span class="fc" id="L36">            PreparedStatement stmt = conn.prepareStatement(&quot;SELECT course_id FROM course_dis WHERE course_name = ?&quot;);</span>
+<span class="fc" id="L37">            stmt.setString(1, courseName);</span>
+<span class="fc" id="L38">            rs = stmt.executeQuery();</span>
+
+<span class="fc bfc" id="L40" title="All 2 branches covered.">            if (rs.next()) {</span>
+<span class="fc" id="L41">                System.out.println(&quot;Course already exists in catalogue&quot;);</span>
+<span class="fc" id="L42">                return 0;</span>
+            }
+
+            // Insert the new course into the course_dis table
+<span class="fc" id="L46">            ps = conn.prepareStatement(</span>
+                    &quot;INSERT INTO course_dis (course_name, credit_structure, prerequisites, total_credits) &quot; +
+                            &quot;VALUES (?, ?, ?, ?)&quot;, Statement.RETURN_GENERATED_KEYS);
+<span class="fc" id="L49">            ps.setString(1, courseName);</span>
+<span class="fc" id="L50">            ps.setString(2, creditStructure);</span>
+<span class="fc" id="L51">            ps.setString(3, prerequisites);</span>
+<span class="fc" id="L52">            ps.setInt(4, totalCredits);</span>
+
+
+<span class="fc" id="L55">            int result = ps.executeUpdate();</span>
+
+            // Check if the course was added successfully
+<span class="pc bpc" id="L58" title="1 of 2 branches missed.">            if (result &gt; 0) {</span>
+<span class="fc" id="L59">                System.out.println(&quot;New course added successfully!&quot;);</span>
+//	            return 1;
+            } else {
+<span class="nc" id="L62">                System.out.println(&quot;Failed to add new course.&quot;);</span>
+<span class="nc" id="L63">                return 2;</span>
+            }
+
+<span class="nc" id="L66">        } catch (SQLException e) {</span>
+<span class="nc" id="L67">            System.err.println(&quot;SQLException: &quot; + e.getMessage());</span>
+<span class="nc" id="L68">            return 3;</span>
+        } finally {
+            // Close the database resources
+            try {
+<span class="pc bpc" id="L72" title="1 of 2 branches missed.">                if (rs != null) {</span>
+<span class="fc" id="L73">                    rs.close();</span>
+                }
+<span class="fc bfc" id="L75" title="All 2 branches covered.">                if (ps != null) {</span>
+<span class="fc" id="L76">                    ps.close();</span>
+                }
+<span class="nc" id="L78">            } catch (SQLException e) {</span>
+<span class="nc" id="L79">                System.err.println(&quot;SQLException: &quot; + e.getMessage());</span>
+<span class="nc" id="L80">                return 3;</span>
+<span class="fc" id="L81">            }</span>
+//	        scanner.close();
+        }
+<span class="fc" id="L84">        return 1;</span>
+    }
+    public static void deleteCourse(Connection conn) throws SQLException {
+<span class="fc" id="L87">        Scanner scanner = new Scanner(System.in);</span>
+<span class="fc" id="L88">        PreparedStatement ps = null;</span>
+<span class="fc" id="L89">        ResultSet rs = null;</span>
+
+        try {
+            // Get the course name from the user
+<span class="fc" id="L93">            System.out.print(&quot;Enter course Id to delete: &quot;);</span>
+<span class="fc" id="L94">            int courseId = scanner.nextInt();</span>
+
+            // Delete the course from the course_dis table
+<span class="fc" id="L97">            ps = conn.prepareStatement(&quot;DELETE FROM course_dis WHERE course_id = ?&quot;);</span>
+<span class="fc" id="L98">            ps.setInt(1, courseId);</span>
+
+<span class="fc" id="L100">            int result = ps.executeUpdate();</span>
+
+            // Check if the course was deleted successfully
+<span class="fc bfc" id="L103" title="All 2 branches covered.">            if (result &gt; 0) {</span>
+<span class="fc" id="L104">                System.out.println(&quot;Course deleted successfully!&quot;);</span>
+            } else {
+<span class="fc" id="L106">                System.out.println(&quot;Failed to delete course.&quot;);</span>
+            }
+
+<span class="nc" id="L109">        } catch (SQLException e) {</span>
+<span class="nc" id="L110">            System.err.println(&quot;SQLException: &quot; + e.getMessage());</span>
+        } finally {
+            // Close the database resources
+            try {
+<span class="pc bpc" id="L114" title="1 of 2 branches missed.">                if (rs != null) {</span>
+<span class="nc" id="L115">                    rs.close();</span>
+                }
+<span class="pc bpc" id="L117" title="1 of 2 branches missed.">                if (ps != null) {</span>
+<span class="fc" id="L118">                    ps.close();</span>
+                }
+<span class="nc" id="L120">            } catch (SQLException e) {</span>
+<span class="nc" id="L121">                System.err.println(&quot;SQLException: &quot; + e.getMessage());</span>
+<span class="fc" id="L122">            }</span>
+//	      scanner.close();
+        }
+<span class="fc" id="L125">    }</span>
+
+    public void displayCourses(Connection conn) {
+        try {
+<span class="fc" id="L129">            Statement stmt = conn.createStatement();</span>
+<span class="fc" id="L130">            String sql = &quot;SELECT * FROM course_dis&quot;;</span>
+<span class="fc" id="L131">            ResultSet rs = stmt.executeQuery(sql);</span>
+<span class="fc" id="L132">            System.out.println(&quot;Course ID\tCourse Name\tCredit Structure\tPrerequisites&quot;);</span>
+<span class="fc bfc" id="L133" title="All 2 branches covered.">            while (rs.next()) {</span>
+<span class="fc" id="L134">                int courseId = rs.getInt(&quot;course_id&quot;);</span>
+<span class="fc" id="L135">                String courseName = rs.getString(&quot;course_name&quot;);</span>
+<span class="fc" id="L136">                String creditStructure = rs.getString(&quot;credit_structure&quot;);</span>
+<span class="fc" id="L137">                String prerequisites = rs.getString(&quot;prerequisites&quot;);</span>
+<span class="fc" id="L138">                System.out.printf(&quot;%d\t%s\t%s\t%s%n&quot;, courseId, courseName, creditStructure, prerequisites);</span>
+<span class="fc" id="L139">            }</span>
+<span class="fc" id="L140">            rs.close();</span>
+<span class="fc" id="L141">            stmt.close();</span>
+<span class="nc" id="L142">        } catch (SQLException e) {</span>
+<span class="nc" id="L143">            System.err.println(&quot;SQLException: &quot; + e.getMessage());</span>
+<span class="fc" id="L144">        }}</span>
+    public void editCourseCatalog(Connection conn,int course_id, String course_name, String credit_structure,String prerequisites) throws SQLException {
+//        if (!username.equals(&quot;Staff Dean's office&quot;)) {
+//            System.out.println(&quot;Error: Access denied. Only staff from Dean's office can edit the course catalog.&quot;);
+//            return;
+//        }
+
+<span class="fc" id="L151">        String sql =  &quot;UPDATE course_dis SET course_name=?, credit_structure=?, prerequisites=? WHERE course_id=?&quot;;</span>
+<span class="fc" id="L152">        PreparedStatement statement = conn.prepareStatement(sql);</span>
+<span class="fc" id="L153">        statement.setString(1, course_name);</span>
+<span class="fc" id="L154">        statement.setString(2, credit_structure);</span>
+<span class="fc" id="L155">        statement.setString(3, prerequisites);</span>
+<span class="fc" id="L156">        statement.setInt(4, course_id);</span>
+
+<span class="fc" id="L158">        int rowsUpdated = statement.executeUpdate();</span>
+<span class="fc bfc" id="L159" title="All 2 branches covered.">        if (rowsUpdated &gt; 0) {</span>
+<span class="fc" id="L160">            System.out.println(&quot;Course catalog updated successfully.&quot;);</span>
+        } else {
+<span class="fc" id="L162">            System.out.println(&quot;Error: Failed to update course catalog.&quot;);</span>
+        }
+<span class="fc" id="L164">    }</span>
+    public void addNewCurriculum(Connection conn) throws SQLException {
+<span class="fc" id="L166">        Scanner scanner = new Scanner(System.in);</span>
+<span class="fc" id="L167">        System.out.print(&quot;Enter the semester for the new curriculum: &quot;);</span>
+<span class="fc" id="L168">        int semester = scanner.nextInt();</span>
+<span class="fc" id="L169">        System.out.print(&quot;Enter the status for the new curriculum (0-4): &quot;);</span>
+<span class="fc" id="L170">        int status = scanner.nextInt();</span>
+<span class="fc" id="L171">        scanner.nextLine();</span>
+
+<span class="fc" id="L173">        PreparedStatement stmt = conn.prepareStatement(</span>
+                &quot;INSERT INTO curriculum (semester, status) VALUES (?, ?)&quot;);
+<span class="fc" id="L175">        stmt.setInt(1, semester);</span>
+<span class="fc" id="L176">        stmt.setInt(2, status);</span>
+<span class="fc" id="L177">        int rowsAffected = stmt.executeUpdate();</span>
+<span class="pc bpc" id="L178" title="1 of 2 branches missed.">        if (rowsAffected &gt; 0) {</span>
+<span class="fc" id="L179">            System.out.println(&quot;New curriculum added successfully.&quot;);</span>
+        } else {
+<span class="nc" id="L181">            System.out.println(&quot;Failed to add new curriculum.&quot;);</span>
+        }
+<span class="fc" id="L183">    }</span>
+
+    public void modifyCurriculumStatus(Connection conn) throws SQLException {
+<span class="fc" id="L186">        Scanner scanner = new Scanner(System.in);</span>
+<span class="fc" id="L187">        System.out.print(&quot;Enter the ID of the curriculum to modify: &quot;);</span>
+<span class="fc" id="L188">        int curriculumId = scanner.nextInt();</span>
+<span class="fc" id="L189">        scanner.nextLine();</span>
+<span class="fc" id="L190">        System.out.print(&quot;Enter the new status for the curriculum (0-4): &quot;);</span>
+<span class="fc" id="L191">        int newStatus = scanner.nextInt();</span>
+<span class="fc" id="L192">        scanner.nextLine();</span>
+
+<span class="fc" id="L194">        PreparedStatement stmt = conn.prepareStatement(</span>
+                &quot;UPDATE curriculum SET status = ? WHERE id = ?&quot;);
+<span class="fc" id="L196">        stmt.setInt(1, newStatus);</span>
+<span class="fc" id="L197">        stmt.setInt(2, curriculumId);</span>
+<span class="fc" id="L198">        int rowsAffected = stmt.executeUpdate();</span>
+<span class="fc bfc" id="L199" title="All 2 branches covered.">        if (rowsAffected &gt; 0) {</span>
+<span class="fc" id="L200">            System.out.println(&quot;Curriculum status updated successfully.&quot;);</span>
+        } else {
+<span class="fc" id="L202">            System.out.println(&quot;Failed to update curriculum status.&quot;);</span>
+        }
+<span class="fc" id="L204">    }</span>
+}
+
+
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.8.202204050719</span></div></body></html>

@@ -1,0 +1,282 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>user_auth.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">seproj</a> &gt; <a href="index.source.html" class="el_package">org.example</a> &gt; <span class="el_source">user_auth.java</span></div><h1>user_auth.java</h1><pre class="source lang-java linenums">package org.example;
+
+import java.io.IOException;
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.Scanner;
+
+<span class="nc" id="L10">public class user_auth {</span>
+    private static final String USER_TABLE = &quot;users&quot;;
+    public static void main(String[] args) {
+<span class="fc" id="L13">        Connection conn = null;</span>
+<span class="fc" id="L14">        Statement stmt = null;</span>
+<span class="fc" id="L15">        ResultSet rs = null;</span>
+<span class="fc" id="L16">        Scanner scanner = new Scanner(System.in);</span>
+
+        try {
+            // Get a connection to the database
+<span class="fc" id="L20">            conn = DBconn.getConnection();</span>
+
+            // Get the user input for username and password
+<span class="fc" id="L23">            System.out.print(&quot;Enter username: &quot;);</span>
+<span class="fc" id="L24">            String username = scanner.nextLine();</span>
+
+<span class="fc" id="L26">            System.out.print(&quot;Enter password: &quot;);</span>
+<span class="fc" id="L27">            String password = scanner.nextLine();</span>
+
+            // Execute the query to authenticate the user
+<span class="fc" id="L30">            stmt = conn.createStatement();</span>
+<span class="fc" id="L31">            String sql = &quot;SELECT * FROM &quot; + USER_TABLE + &quot; WHERE username='&quot; + username + &quot;' AND password='&quot; + password + &quot;'&quot;;</span>
+<span class="fc" id="L32">            rs = stmt.executeQuery(sql);</span>
+
+            // Check if the user is authenticated or not
+<span class="pc bpc" id="L35" title="1 of 2 branches missed.">            if (rs.next()) {</span>
+<span class="fc" id="L36">                String role = rs.getString(&quot;role&quot;);</span>
+<span class="fc" id="L37">                int userId = rs.getInt(&quot;user_id&quot;);</span>
+
+<span class="fc bfc" id="L39" title="All 2 branches covered.">                if (role.equals(&quot;student&quot;)) {</span>
+<span class="fc" id="L40">                    student stu = new student();</span>
+
+                    while (true) {
+<span class="fc" id="L43">                        System.out.println(&quot;\n1. Display available courses&quot;);</span>
+<span class="fc" id="L44">                        System.out.println(&quot;2. Register for a course&quot;);</span>
+<span class="fc" id="L45">                        System.out.println(&quot;3. De-register for a course&quot;);</span>
+<span class="fc" id="L46">                        System.out.println(&quot;4. Display courses registered&quot;);</span>
+<span class="fc" id="L47">                        System.out.println(&quot;5. Display grades assigned&quot;);</span>
+<span class="fc" id="L48">                        System.out.println(&quot;6. compute current CGPA&quot;);</span>
+<span class="fc" id="L49">                        System.out.println(&quot;7. Edit your profile&quot;);</span>
+<span class="fc" id="L50">                        System.out.println(&quot;8. Check graduation eligibility&quot;);</span>
+<span class="fc" id="L51">                        System.out.println(&quot;9. Logout&quot;);</span>
+<span class="fc" id="L52">                        System.out.print(&quot;Enter your choice: &quot;);</span>
+
+<span class="fc" id="L54">                        int choice = scanner.nextInt();</span>
+<span class="fc" id="L55">                        scanner.nextLine();</span>
+
+<span class="pc bpc" id="L57" title="8 of 10 branches missed.">                        switch (choice) {</span>
+                            case 1:
+<span class="fc" id="L59">                                int currStatus = CurriculumManager.getLatestCurriculumstatus(conn);</span>
+<span class="pc bpc" id="L60" title="1 of 2 branches missed.">                                if (currStatus == 2 ) {</span>
+<span class="nc" id="L61">                                    stu.displayCourses(conn);</span>
+                                } else {
+<span class="fc" id="L63">                                    System.out.println(&quot;Courses are not available for registration.&quot;);</span>
+                                }
+<span class="fc" id="L65">                                break;</span>
+                            case 2:
+<span class="nc" id="L67">                                currStatus = CurriculumManager.getLatestCurriculumstatus(conn);</span>
+<span class="nc bnc" id="L68" title="All 2 branches missed.">                                if (currStatus == 2) {</span>
+<span class="nc" id="L69">                                    stu.registerCourse(conn, userId);</span>
+                                } else {
+<span class="nc" id="L71">                                    System.out.println(&quot;Course registration is not open at this time.&quot;);</span>
+                                }
+<span class="nc" id="L73">                                break;</span>
+                            case 3:
+<span class="nc" id="L75">                                currStatus = CurriculumManager.getLatestCurriculumstatus(conn);</span>
+<span class="nc bnc" id="L76" title="All 2 branches missed.">                                if (currStatus == 2) {</span>
+<span class="nc" id="L77">                                    stu.displayRegisteredCourses(conn, userId);</span>
+<span class="nc" id="L78">                                    stu.deleteRegistration(conn, userId);</span>
+                                } else {
+<span class="nc" id="L80">                                    System.out.println(&quot;Courses are not available to delete at this moment.&quot;);</span>
+                                }
+<span class="nc" id="L82">                                break;</span>
+                            case 4:
+<span class="nc" id="L84">                                stu.displayRegisteredCourses(conn, userId);</span>
+<span class="nc" id="L85">                                break;</span>
+                            case 6:
+<span class="nc" id="L87">                                System.out.println(&quot;Your current CGPA is&quot;+stu.calculateCGPA(conn,userId));</span>
+<span class="nc" id="L88">                                break;</span>
+                            case 5:
+<span class="nc" id="L90">                                student.displayGrades(conn,userId);</span>
+<span class="nc" id="L91">                                break;</span>
+                            case 7:
+<span class="nc" id="L93">                                System.out.println(&quot;\nEnter 1 to edit your phone number&quot;);</span>
+<span class="nc" id="L94">                                System.out.println(&quot;Enter 2 to edit your address&quot;);</span>
+<span class="nc" id="L95">                                int choice1 = scanner.nextInt();</span>
+<span class="nc" id="L96">                                scanner.nextLine();</span>
+<span class="nc bnc" id="L97" title="All 3 branches missed.">                                switch(choice1){</span>
+                                    case 1:
+<span class="nc" id="L99">                                        System.out.println(&quot;Enter your new phonenumber:&quot;);</span>
+<span class="nc" id="L100">                                        int phonenumber = scanner.nextInt();</span>
+<span class="nc" id="L101">                                        scanner.nextLine();</span>
+<span class="nc" id="L102">                                        stu.updateContactInfo(conn,userId,phonenumber);</span>
+                                    case 2:
+<span class="nc" id="L104">                                        System.out.println(&quot;Enter your new address:&quot;);</span>
+<span class="nc" id="L105">                                        String address = scanner.nextLine();</span>
+<span class="nc" id="L106">                                        stu.updateAddr(conn,userId,address);</span>
+                                }
+
+                            case 8:
+<span class="nc" id="L110">                                gradcheck.checkGraduationStatus(conn, userId);</span>
+<span class="nc" id="L111">                                break;</span>
+                            case 9:
+<span class="fc" id="L113">                                System.out.println(&quot;Logged out successfully.&quot;);</span>
+<span class="fc" id="L114">                                return;</span>
+                            default:
+<span class="nc" id="L116">                                System.out.println(&quot;Invalid choice. Please try again.&quot;);</span>
+                        }
+<span class="fc" id="L118">                    }</span>
+
+<span class="fc bfc" id="L120" title="All 2 branches covered.">                } else if (role.equals(&quot;instructor&quot;)) {</span>
+<span class="fc" id="L121">                    prof ins = new prof();</span>
+
+                    while (true) {
+//                	scanner = new Scanner(System.in);
+<span class="fc" id="L125">                        System.out.println(&quot;\n1. Add a new offering&quot;);</span>
+<span class="fc" id="L126">                        System.out.println(&quot;2. Delete a offering&quot;);</span>
+<span class="fc" id="L127">                        System.out.println(&quot;3. Assign grades&quot;);</span>
+<span class="fc" id="L128">                        System.out.println(&quot;4. Logout&quot;);</span>
+<span class="fc" id="L129">                        System.out.print(&quot;Enter your choice: &quot;);</span>
+
+<span class="fc" id="L131">                        int choice = scanner.nextInt();</span>
+//                    System.out.println(choice);
+<span class="fc" id="L133">                        scanner.nextLine();</span>
+
+<span class="pc bpc" id="L135" title="4 of 5 branches missed.">                        switch (choice) {</span>
+                            case 1:
+<span class="nc" id="L137">                                int currStatus = CurriculumManager.getLatestCurriculumstatus(conn);</span>
+<span class="nc bnc" id="L138" title="All 2 branches missed.">                                if (currStatus == 1) {</span>
+<span class="nc" id="L139">                                    prof.addNewCourse(conn, username);</span>
+                                } else {
+<span class="nc" id="L141">                                    System.out.println(&quot;Courses are not available to offer.&quot;);</span>
+                                }
+<span class="nc" id="L143">                                break;</span>
+                            case 2:
+<span class="nc" id="L145">                                currStatus = CurriculumManager.getLatestCurriculumstatus(conn);</span>
+<span class="nc bnc" id="L146" title="All 2 branches missed.">                                if (currStatus == 1) {</span>
+<span class="nc" id="L147">                                    prof.deleteCourse(conn);</span>
+                                } else {
+<span class="nc" id="L149">                                    System.out.println(&quot;Courses are not available to delete at this moment.&quot;);</span>
+                                }
+<span class="nc" id="L151">                                break;</span>
+                            case 3:
+<span class="nc" id="L153">                                currStatus = CurriculumManager.getLatestCurriculumstatus(conn);</span>
+<span class="nc bnc" id="L154" title="All 2 branches missed.">                                if (currStatus == 3) {</span>
+<span class="nc" id="L155">                                    ins.displayCourses(conn,username);</span>
+<span class="nc" id="L156">                                    System.out.print(&quot;Enter off_id: &quot;);</span>
+//                                        Scanner scanner = new Scanner(System.in);
+<span class="nc" id="L158">                                    int courseId = scanner.nextInt();</span>
+<span class="nc" id="L159">                                    scanner.nextLine();</span>
+<span class="nc" id="L160">                                    System.out.println(&quot;Enter File path to upload:&quot;);</span>
+<span class="nc" id="L161">                                    String path =scanner.nextLine();</span>
+//                                        scanner.nextLine();
+<span class="nc" id="L163">                                    prof.updateGradesFromCsv(conn,path,courseId);</span>
+<span class="nc" id="L164">                                } else {</span>
+<span class="nc" id="L165">                                    System.out.println(&quot;Courses are not available to grade at this moment.&quot;);</span>
+                                }
+<span class="nc" id="L167">                                break;</span>
+                            case 4:
+<span class="fc" id="L169">                                System.out.println(&quot;Logged out successfully.&quot;);</span>
+<span class="fc" id="L170">                                return;</span>
+                            default:
+<span class="nc" id="L172">                                System.out.println(&quot;Invalid choice. Please try again.&quot;);</span>
+                        }
+<span class="nc" id="L174">                    }</span>
+<span class="pc bpc" id="L175" title="1 of 2 branches missed.">                } else if (role.equals(&quot;admin&quot;)) {</span>
+<span class="fc" id="L176">                    admin adn = new admin();</span>
+                    while (true) {
+<span class="fc" id="L178">                        System.out.println(&quot;\n1. View course catalog&quot;);</span>
+<span class="fc" id="L179">                        System.out.println(&quot;2.Delete course from catalog&quot;);</span>
+<span class="fc" id="L180">                        System.out.println(&quot;3.Add new course&quot;);</span>
+<span class="fc" id="L181">                        System.out.println(&quot;4. Generate transcript&quot;);</span>
+<span class="fc" id="L182">                        System.out.println(&quot;5. Add new curriculum&quot;);</span>
+<span class="fc" id="L183">                        System.out.println(&quot;6. Modify curriculum status&quot;);</span>
+<span class="fc" id="L184">                        System.out.println(&quot;7. Logout&quot;);</span>
+<span class="fc" id="L185">                        System.out.print(&quot;Enter your choice: &quot;);</span>
+
+<span class="fc" id="L187">                        int choice = scanner.nextInt();</span>
+//                    scanner.nextLine();
+
+<span class="pc bpc" id="L190" title="7 of 8 branches missed.">                        switch (choice) {</span>
+                            case 1:
+<span class="nc" id="L192">                                adn.displayCourses(conn);</span>
+<span class="nc" id="L193">                                break;</span>
+                            case 2:
+<span class="nc bnc" id="L195" title="All 2 branches missed.">                                if (!username.equals(&quot;Staff Deans office&quot;)) {</span>
+<span class="nc" id="L196">                                    System.out.println(&quot;Error: Access denied. Only staff from Dean's office can edit the course catalog.&quot;);</span>
+<span class="nc" id="L197">                                    return;</span>
+                                }
+<span class="nc" id="L199">                                int currStatus = CurriculumManager.getLatestCurriculumstatus(conn);</span>
+<span class="nc bnc" id="L200" title="All 2 branches missed.">                                if (currStatus == 0) {</span>
+<span class="nc" id="L201">                                    adn.displayCourses(conn);</span>
+<span class="nc" id="L202">                                    admin.deleteCourse(conn);</span>
+                                } else {
+<span class="nc" id="L204">                                    System.out.println(&quot;Courses are not available to delete at this moment.&quot;);</span>
+                                }
+<span class="nc" id="L206">                                break;</span>
+                            case 3:
+<span class="nc bnc" id="L208" title="All 2 branches missed.">                                if (!username.equals(&quot;Staff Deans office&quot;)) {</span>
+<span class="nc" id="L209">                                    System.out.println(&quot;Error: Access denied. Only staff from Dean's office can edit the course catalog.&quot;);</span>
+<span class="nc" id="L210">                                    return;</span>
+                                }
+<span class="nc" id="L212">                                currStatus = CurriculumManager.getLatestCurriculumstatus(conn);</span>
+<span class="nc bnc" id="L213" title="All 2 branches missed.">                                if (currStatus == 0) {</span>
+<span class="nc" id="L214">                                    admin.addNewCourse(conn);</span>
+                                } else {
+<span class="nc" id="L216">                                    System.out.println(&quot;Courses are not available to add at this moment.&quot;);</span>
+                                }
+<span class="nc" id="L218">                                break;</span>
+                            case 4:
+<span class="nc" id="L220">                                System.out.println(&quot;Enter user ID:&quot;);</span>
+<span class="nc" id="L221">                                int studentId = scanner.nextInt();</span>
+//                            scanner.nextLine();
+<span class="nc" id="L223">                                TranscriptGenerator transcriptGenerator = new TranscriptGenerator();</span>
+<span class="nc" id="L224">                                transcriptGenerator.generateTranscript(conn, studentId);</span>
+<span class="nc" id="L225">                                break;</span>
+                            case 5:
+<span class="nc bnc" id="L227" title="All 2 branches missed.">                                if (!username.equals(&quot;Staff Deans office&quot;)) {</span>
+<span class="nc" id="L228">                                    System.out.println(&quot;Error: Access denied. Only staff from Dean's office can edit the course catalog.&quot;);</span>
+<span class="nc" id="L229">                                    return;</span>
+                                }
+<span class="nc" id="L231">                                adn.addNewCurriculum(conn);</span>
+<span class="nc" id="L232">                                break;</span>
+                            case 6:
+<span class="nc bnc" id="L234" title="All 2 branches missed.">                                if (!username.equals(&quot;Staff Deans office&quot;)) {</span>
+<span class="nc" id="L235">                                    System.out.println(&quot;Error: Access denied. Only staff from Dean's office can edit the course catalog.&quot;);</span>
+<span class="nc" id="L236">                                    return;</span>
+                                }
+<span class="nc" id="L238">                                adn.modifyCurriculumStatus(conn);</span>
+<span class="nc" id="L239">                                break;</span>
+
+                            case 7:
+<span class="fc" id="L242">                                System.out.println(&quot;Logged out successfully.&quot;);</span>
+<span class="fc" id="L243">                                return;</span>
+                            default:
+<span class="nc" id="L245">                                System.out.println(&quot;Invalid choice. Please try again.&quot;);</span>
+                        }
+<span class="nc" id="L247">                    }</span>
+                }
+<span class="nc" id="L249">            }</span>
+
+            else {
+<span class="nc" id="L252">                System.out.println(&quot;Invalid username or password.&quot;);</span>
+            }
+
+<span class="nc" id="L255">        } catch (SQLException e) {</span>
+<span class="nc" id="L256">            System.err.println(&quot;SQLException: &quot; + e.getMessage());</span>
+<span class="nc" id="L257">        } catch (IOException e) {</span>
+            // TODO Auto-generated catch block
+<span class="nc" id="L259">            e.printStackTrace();</span>
+        } finally {
+            // Close the database resources
+            try {
+<span class="pc bpc" id="L263" title="1 of 2 branches missed.">                if (rs != null) {</span>
+<span class="fc" id="L264">                    rs.close();</span>
+                }
+<span class="pc bpc" id="L266" title="1 of 2 branches missed.">                if (stmt != null) {</span>
+<span class="fc" id="L267">                    stmt.close();</span>
+                }
+<span class="pc bpc" id="L269" title="1 of 2 branches missed.">                if (conn != null) {</span>
+<span class="fc" id="L270">                    DBconn.closeConnection(conn, stmt);</span>
+                }
+<span class="nc" id="L272">            } catch (SQLException e) {</span>
+<span class="nc" id="L273">                System.err.println(&quot;SQLException: &quot; + e.getMessage());</span>
+<span class="fc" id="L274">            }</span>
+<span class="fc" id="L275">            scanner.close();</span>
+        }
+<span class="nc" id="L277">    }</span>
+}
+
+
+
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.8.202204050719</span></div></body></html>

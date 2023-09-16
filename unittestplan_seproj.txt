@@ -1,0 +1,26 @@
+Unit Test plan:
+For testing the code,I have written test cases  for each functions which makes testing modular and easy to rectify errors,
+For each functionality I have generated cases for a validInput,Invalidinput and covered edge cases and I have made sure to 
+delete the data that I have added after the run in the teardown phase which reduced data update-delete anomaly.
+
+The test cases I have made are:
+displayCoursesTest
+CourseEditCheckAd
+ContactInfoTest
+CourseDeletionTestAd
+CourseAddCheckAd
+CurriculumTestModify
+GradeCalculationTest
+CourseRegistrationTest
+UpdateGradesTest
+CurrciulumTestAdd
+userTest
+gradcheckTest
+displaycoursest
+displayRegisteredCourses
+courseaddcheck
+TranscriptorGeneratorTest
+DBconnTest
+displayCoursesTestad
+CourseDeletionTest
+RegisterCheckTest

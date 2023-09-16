@@ -1,0 +1,175 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>registercheck.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">seproj</a> &gt; <a href="index.source.html" class="el_package">org.example</a> &gt; <span class="el_source">registercheck.java</span></div><h1>registercheck.java</h1><pre class="source lang-java linenums">package org.example;
+
+import java.sql.*;
+
+<span class="nc" id="L5">public class registercheck {</span>
+    private static final String COURSE_DIS_TABLE = &quot;course_dis&quot;;
+    private static final String STUDENT_COURSE_REG_TABLE = &quot;student_course_reg&quot;;
+    private static final String GRADES_TABLE = &quot;grades&quot;;
+    private static final String COURSE_OFF_TABLE = &quot;course_off&quot;;
+
+    public static boolean checkPrerequisites(Connection conn, int studentId, int courseId) throws SQLException {
+<span class="fc" id="L12">        PreparedStatement ps = null;</span>
+<span class="fc" id="L13">        ResultSet rs = null;</span>
+
+        try {
+            // Get the prerequisites for the course
+<span class="fc" id="L17">            ps = conn.prepareStatement(&quot;SELECT prerequisites FROM &quot; + COURSE_DIS_TABLE + &quot; WHERE course_id=?&quot;);</span>
+<span class="fc" id="L18">            ps.setInt(1, courseId);</span>
+<span class="fc" id="L19">            rs = ps.executeQuery();</span>
+<span class="fc" id="L20">            rs.next();</span>
+<span class="fc" id="L21">            String prerequisites = rs.getString(&quot;prerequisites&quot;);</span>
+
+<span class="pc bpc" id="L23" title="1 of 4 branches missed.">            if (prerequisites == null || prerequisites.isEmpty()) {</span>
+                // No prerequisites for the course
+<span class="fc" id="L25">                return true;</span>
+            }
+
+            // Check if the prerequisites have been completed by the student
+<span class="fc" id="L29">            String[] prereqList = prerequisites.split(&quot;\\s*,\\s*&quot;);</span>
+<span class="fc bfc" id="L30" title="All 2 branches covered.">            for (String prereq : prereqList) {</span>
+<span class="fc" id="L31">                int prereqId = getCourseIdByName(conn, prereq);</span>
+<span class="pc bpc" id="L32" title="1 of 2 branches missed.">                if (prereqId == -1) {</span>
+                    // Prerequisite course not found
+<span class="nc" id="L34">                    return false;</span>
+                }
+                // Get the registration id for the prerequisite course
+<span class="fc" id="L37">                ps = conn.prepareStatement(</span>
+                        &quot;SELECT reg_id FROM student_course_reg scr &quot; +
+                                &quot;JOIN course_off co ON scr.off_id = co.off_id &quot; +
+                                &quot;WHERE scr.student_id = ? AND co.course_id = ?&quot;);
+<span class="fc" id="L41">                ps.setInt(1, studentId);</span>
+<span class="fc" id="L42">                ps.setInt(2, prereqId);</span>
+<span class="fc" id="L43">                rs = ps.executeQuery();</span>
+
+<span class="fc bfc" id="L45" title="All 2 branches covered.">                if (!rs.next()) {</span>
+                    // Prerequisite course not found
+<span class="fc" id="L47">                    return false;</span>
+                }
+
+<span class="fc" id="L50">                int regId = rs.getInt(&quot;reg_id&quot;);</span>
+
+                // Check if a grade has been assigned for the prerequisite course
+<span class="fc" id="L53">                ps = conn.prepareStatement(&quot;SELECT COUNT(*) FROM &quot; + GRADES_TABLE + &quot; WHERE reg_id=?&quot;);</span>
+<span class="fc" id="L54">                ps.setInt(1, regId);</span>
+<span class="fc" id="L55">                rs = ps.executeQuery();</span>
+<span class="fc" id="L56">                rs.next();</span>
+<span class="fc" id="L57">                int gradeAssigned = rs.getInt(1);</span>
+
+<span class="pc bpc" id="L59" title="1 of 2 branches missed.">                if (gradeAssigned == 0) {</span>
+                    // Grade not assigned for prerequisite course
+<span class="nc" id="L61">                    return false;</span>
+                }
+            }
+
+            // All prerequisites completed
+<span class="fc" id="L66">            return true;</span>
+
+<span class="nc" id="L68">        } catch (SQLException e) {</span>
+<span class="nc" id="L69">            System.err.println(&quot;SQLException: &quot; + e.getMessage());</span>
+<span class="nc" id="L70">            return false;</span>
+        } finally {
+            // Close the database resources
+            try {
+<span class="pc bpc" id="L74" title="1 of 2 branches missed.">                if (rs != null) {</span>
+<span class="fc" id="L75">                    rs.close();</span>
+                }
+<span class="pc bpc" id="L77" title="1 of 2 branches missed.">                if (ps != null) {</span>
+<span class="fc" id="L78">                    ps.close();</span>
+                }
+<span class="nc" id="L80">            } catch (SQLException e) {</span>
+<span class="nc" id="L81">                System.err.println(&quot;SQLException: &quot; + e.getMessage());</span>
+<span class="fc" id="L82">            }</span>
+        }
+    }
+    public static int getCourseIdByName(Connection conn, String courseName) throws SQLException {
+<span class="fc" id="L86">        int courseId = -1;</span>
+<span class="fc" id="L87">        String sql = &quot;SELECT course_id FROM course_dis WHERE course_name = ?&quot;;</span>
+<span class="fc" id="L88">        PreparedStatement pstmt = conn.prepareStatement(sql);</span>
+<span class="fc" id="L89">        pstmt.setString(1, courseName);</span>
+<span class="fc" id="L90">        ResultSet rs = pstmt.executeQuery();</span>
+<span class="fc bfc" id="L91" title="All 2 branches covered.">        if (rs.next()) {</span>
+<span class="fc" id="L92">            courseId = rs.getInt(&quot;course_id&quot;);</span>
+        }
+<span class="fc" id="L94">        return courseId;</span>
+    }
+    public static boolean creditsCheck(Connection conn, int studentId, int courseId) throws SQLException {
+<span class="fc" id="L97">        PreparedStatement ps = null;</span>
+<span class="fc" id="L98">        ResultSet rs = null;</span>
+
+        try {
+            // Get the semester for the given course
+//             = conn.prepareStatement(
+//                &quot;SELECT semester FROM &quot; + COURSE_OFF_TABLE + &quot; WHERE off_id=?&quot;);
+//            ps.setInt(1, courseId);
+//            rs = ps.executeQuery();
+//            if (rs.next()) { // add this line to move the cursor to the first row
+//                String semester = rs.getString(&quot;semester&quot;);
+<span class="fc" id="L108">            int semester = CurriculumManager.getLatestCurriculumsem(conn);</span>
+
+            // Get the total number of credits registered for the semester
+<span class="fc" id="L111">            ps = conn.prepareStatement(</span>
+                    &quot;SELECT total_credits FROM &quot; + COURSE_DIS_TABLE + &quot; WHERE course_id=?&quot;);
+<span class="fc" id="L113">            ps.setInt(1, courseId);</span>
+<span class="fc" id="L114">            rs = ps.executeQuery();</span>
+<span class="fc" id="L115">            int courseCredits=0;</span>
+<span class="pc bpc" id="L116" title="1 of 2 branches missed.">            if (rs.next()) {</span>
+<span class="fc" id="L117">                courseCredits = rs.getInt(&quot;total_credits&quot;);</span>
+            }
+<span class="fc" id="L119">            ps = conn.prepareStatement(</span>
+                    &quot;SELECT SUM(credits) FROM &quot; + STUDENT_COURSE_REG_TABLE + &quot; WHERE student_id=? AND off_id IN (SELECT off_id FROM &quot; + COURSE_OFF_TABLE + &quot; WHERE semester=?)&quot;);
+<span class="fc" id="L121">            ps.setInt(1, studentId);</span>
+<span class="fc" id="L122">            ps.setInt(2, semester);</span>
+<span class="fc" id="L123">            rs = ps.executeQuery();</span>
+<span class="pc bpc" id="L124" title="1 of 2 branches missed.">            if (rs.next()) { // add this line to move the cursor to the first row</span>
+<span class="fc" id="L125">                int totalCredits = rs.getInt(1);</span>
+<span class="fc" id="L126">                totalCredits+=courseCredits;</span>
+//                    System.out.println(totalCredits);
+//                    System.out.println(totalCredits+courseCredits);
+<span class="pc bpc" id="L129" title="1 of 2 branches missed.">                if (totalCredits &gt; 25) {</span>
+<span class="nc" id="L130">                    System.out.println(&quot;Total credits for &quot; + semester + &quot; exceed 25!&quot;);</span>
+<span class="nc" id="L131">                    return false;</span>
+                }
+
+                // Get the number of courses completed for the last two semesters
+<span class="fc bfc" id="L135" title="All 2 branches covered.">                if(semester&gt;2) {</span>
+<span class="fc" id="L136">                    ps = conn.prepareStatement(</span>
+                            &quot;SELECT SUM(student_course_reg.credits) FROM &quot; + GRADES_TABLE + &quot; JOIN student_course_reg ON grades.reg_id=student_course_reg.reg_id JOIN &quot; + COURSE_OFF_TABLE + &quot; ON student_course_reg.off_id=&quot; + COURSE_OFF_TABLE + &quot;.off_id WHERE grades.grade IS NOT NULL AND grades.grade &lt;= 'D' AND student_course_reg.student_id=? AND &quot; + COURSE_OFF_TABLE + &quot;.semester IN (SELECT DISTINCT semester FROM &quot; + COURSE_OFF_TABLE + &quot; WHERE semester &lt; ? ORDER BY semester DESC LIMIT 2)&quot;);
+<span class="fc" id="L138">                    ps.setInt(1, studentId);</span>
+<span class="fc" id="L139">                    ps.setInt(2, semester);</span>
+<span class="fc" id="L140">                    rs = ps.executeQuery();</span>
+<span class="pc bpc" id="L141" title="1 of 2 branches missed.">                    if (rs.next()) { // add this line to move the cursor to the first row</span>
+<span class="fc" id="L142">                        int coursesCompleted = rs.getInt(1);</span>
+
+                        // Get the new credit limit based on the number of courses completed
+<span class="fc" id="L145">                        int creditLimit = (int) Math.round(coursesCompleted * 1.25);</span>
+
+<span class="fc bfc" id="L147" title="All 2 branches covered.">                        if (totalCredits &gt; creditLimit) {</span>
+<span class="fc" id="L148">                            System.out.println(&quot;Total credits for &quot; + semester + &quot; exceed the credit limit of &quot; + creditLimit + &quot; based on completed courses!&quot;);</span>
+<span class="fc" id="L149">                            return false;</span>
+                        }
+                    }
+                }
+            }
+<span class="fc" id="L154">            return true;</span>
+
+<span class="nc" id="L156">        } catch (SQLException e) {</span>
+<span class="nc" id="L157">            System.err.println(&quot;SQLException: &quot; + e.getMessage());</span>
+<span class="nc" id="L158">            return false;</span>
+        } finally {
+            // Close the database resources
+            try {
+<span class="pc bpc" id="L162" title="1 of 2 branches missed.">                if (rs != null) {</span>
+<span class="fc" id="L163">                    rs.close();</span>
+                }
+<span class="pc bpc" id="L165" title="1 of 2 branches missed.">                if (ps != null) {</span>
+<span class="fc" id="L166">                    ps.close();</span>
+                }
+<span class="nc" id="L168">            } catch (SQLException e) {</span>
+<span class="nc" id="L169">                System.err.println(&quot;SQLException: &quot; + e.getMessage());</span>
+<span class="fc" id="L170">            }</span>
+        }
+    }
+}
+
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.8.202204050719</span></div></body></html>
