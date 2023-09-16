@@ -2,6 +2,8 @@
 
 This project consist of 3 logins:student,instructor,admin
 when we enter the username,password we'll be opened with authentication and then role extraction.
+
+
 if role==student,
 we will have following functionalities:
 1. Display available courses:
