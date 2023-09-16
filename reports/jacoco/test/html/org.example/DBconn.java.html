@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>DBconn.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">seproj</a> &gt; <a href="index.source.html" class="el_package">org.example</a> &gt; <span class="el_source">DBconn.java</span></div><h1>DBconn.java</h1><pre class="source lang-java linenums">package org.example;
+
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
+import java.sql.Statement;
+
+<span class="nc" id="L8">public class DBconn {</span>
+    private static final String DB_URL = &quot;jdbc:postgresql://localhost:5432/postgres&quot;;
+    private static final String USER = &quot;postgres&quot;;
+    private static final String PASS = &quot;lashi7941&quot;;
+
+    public static Connection getConnection() {
+<span class="fc" id="L14">        Connection conn = null;</span>
+        try {
+<span class="fc" id="L16">            conn = DriverManager.getConnection(DB_URL, USER, PASS);</span>
+<span class="fc" id="L17">            System.out.println(&quot;Connected to the database!&quot;);</span>
+<span class="nc" id="L18">        } catch (SQLException e) {</span>
+<span class="nc" id="L19">            System.out.println(&quot;Failed to connect to the database: &quot; + e.getMessage());</span>
+<span class="fc" id="L20">        }</span>
+<span class="fc" id="L21">        return conn;</span>
+    }
+
+
+    public static void closeConnection(Connection conn, Statement stmt) {
+        try {
+<span class="pc bpc" id="L27" title="1 of 4 branches missed.">            if (stmt != null &amp;&amp; !stmt.isClosed()) {</span>
+<span class="fc" id="L28">                stmt.close();</span>
+            }
+<span class="nc" id="L30">        } catch (SQLException e) {</span>
+<span class="nc" id="L31">            System.out.println(&quot;Failed to close statement: &quot; + e.getMessage());</span>
+<span class="fc" id="L32">        }</span>
+        try {
+<span class="pc bpc" id="L34" title="2 of 4 branches missed.">            if (conn != null &amp;&amp; !conn.isClosed()) {</span>
+<span class="fc" id="L35">                conn.close();</span>
+            }
+<span class="nc" id="L37">        } catch (SQLException e) {</span>
+<span class="nc" id="L38">            System.out.println(&quot;Failed to close connection: &quot; + e.getMessage());</span>
+<span class="fc" id="L39">        }</span>
+<span class="fc" id="L40">    }</span>
+
+}
+
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.8.202204050719</span></div></body></html>
